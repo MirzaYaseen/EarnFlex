@@ -62,7 +62,7 @@ const AllEmployees = () => {
     <div style={{ padding: 25 }}>
      <div style={{ height: "500px", width: "100%" }}>
       <GoogleMapReact
-        bootstrapURLKeys={{ key: "AIzaSyDCLLoMCFxTZaqgEuARPe-SM4WJu7QnSIM" }} 
+        bootstrapURLKeys={{ key: "" }} 
         defaultCenter={defaultCenter}
         defaultZoom={defaultZoom}
       >
