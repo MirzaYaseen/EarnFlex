@@ -1,4 +1,15 @@
+import React, {useEffect, useState} from "react";
 import {
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  AppBar,
+  Toolbar,
+  Modal,
+  Box,
   Button,
   Grid,
   Dialog,
@@ -7,12 +18,108 @@ import {
   TextField,
   DialogActions,
 } from "@mui/material";
-import React, { useState, useEffect } from "react";
-import Sidebar from "./components/SideBar";
+import { makeStyles } from "@mui/styles";
+import {
+  Home as HomeIcon,
+  AccountCircle as AccountCircleIcon,
+  Settings as SettingsIcon,
+} from "@mui/icons-material";
+import Map from "@mui/icons-material/Map";
+import ProfilePic from "../assets/images/profile.png";
+import SearchIcon from "@mui/icons-material/Search";
+import GoogleMapReact from "google-map-react";
 
-const AllEmployees = () => {
+const drawerWidth = 240;
+
+const useStyles = makeStyles({
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0,
+   
+  },
+  appBar: {
+    zIndex: 1,
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    padding: 10,
+  },
+  drawerPaper: {
+    width: drawerWidth,
+  },
+  toolbar: {
+    minHeight: "94px",
+    background: "linear-gradient(180deg, #1EB980 0%, #FFFFFF 100%)",
+  },
+  searchContainer: {
+    display: "flex",
+    alignItems: "center",
+    padding: "10px",
+    marginLeft: "auto",
+    height: 40,
+  },
+  searchInput: {
+    marginLeft: "10px",
+    height: 30,
+    width: 200,
+    borderRadius: 5,
+    paddingLeft: 20,
+  },
+  profilePic: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+  },
+  container: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  dashboardText: {
+    fontSize: 25,
+    color: "black",
+  },
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mapContainer: {
+    width: "80vw",
+    height: "80vh",
+    backgroundColor: "white",
+    outline: "none",
+    borderRadius: 10,
+    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+  },
+});
+const Marker = ({ text }) => (
+  <div
+    style={{
+      position: "absolute",
+      transform: "translate(-50%, -50%)",
+      width: "20px",
+      height: "20px",
+      borderRadius: "50%",
+      backgroundColor: "red",
+      border: "2px solid white",
+      zIndex: 1000,
+    }}
+  >
+    {text}
+  </div>
+);
+const Sidebar = () => {
+  const classes = useStyles();
+  const defaultCenter = { lat: 0, lng: 0 };
+  const defaultZoom = 2;
   const [employees, setEmployees] = useState([]);
   const serverURL = "https://api.findofficers.com";
+  const [openMapModal, setOpenMapModal] = useState(false);
+
   const [openModal, setOpenModal] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -53,6 +160,9 @@ const AllEmployees = () => {
     }
     if (!email.trim()) {
       newErrors.email = "Email is required";
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Email is invalid";
       isValid = false;
     }
     if (!phoneNumber.trim()) {
@@ -118,17 +228,12 @@ const AllEmployees = () => {
 
     fetchEmployees();
   }, []);
+  const handleMapModalOpen = () => {
+    setOpenMapModal(true);
+  };
 
-  const RatingStars = ({ rating }) => {
-    const stars = [];
-    for (let i = 0; i < 5; i++) {
-      if (i < rating) {
-        stars.push(<span key={i}>★</span>);
-      } else {
-        stars.push(<span key={i}>☆</span>);
-      }
-    }
-    return <div>{stars}</div>;
+  const handleMapModalClose = () => {
+    setOpenMapModal(false);
   };
 
   const handleAddWorker = () => {
@@ -193,137 +298,107 @@ const AllEmployees = () => {
   };
 
   return (
-    <div style={{ padding: 25 }}>
-      <Sidebar />
-      <Grid container alignItems="center" flexDirection="row" marginTop={2}>
-        <Button
-          onClick={handleAddWorker}
+    <div className={classes.container}>
+
+      <Toolbar className={classes.toolbar}>
+        <Typography
           style={{
-            width: 150,
-            height: 40,
-            backgroundColor: "green",
-            color: "white",
-            marginLeft: "auto",
-            justifyContent: "center",
-            alignItems: "center",
-            display: "flex",
-            marginTop: 60,
+            paddingLeft: 250,
+            fontSize: 25,
+            fontWeight: "600",
+            fontFamily: "unset",
           }}
         >
-          + Worker
-        </Button>
-        <input
-          type="text"
-          placeholder="Search"
+          All Workers
+        </Typography>
+        <div className={classes.searchContainer}>
+          <SearchIcon />
+          <input
+            type="text"
+            placeholder="Search"
+            className={classes.searchInput}
+          />
+        </div>
+        <img src={ProfilePic} alt="Profile" className={classes.profilePic} />
+      </Toolbar>
+      <Drawer
+        className={classes.drawer}
+        variant="permanent"
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+      >
+        <div className={classes.toolbar} />
+        <div
           style={{
-            marginLeft: "10px",
-            height: 35,
             width: 200,
-            borderRadius: 5,
-            paddingLeft: 20,
-            justifyContent: "center",
-            alignItems: "center",
-            display: "flex",
-            marginTop: 60,
-          }}
-        />
-      </Grid>
-
-      {employees.map((employee) => (
-        <Grid
-          container
-          key={employee.id}
-          sx={{
-            backgroundColor: "white",
-            elevation: 5,
-            borderWidth: 1,
+            height: 50,
             borderStyle: "groove",
-            borderRadius: 2,
-            marginTop: 2,
-
-            width: "83%",
-
-            marginLeft: 30,
+            borderWidth: 1,
+            borderRadius: 10,
+            padding: 5,
+            marginLeft: "auto",
             marginRight: "auto",
-            padding: 2,
+            marginBottom: 10,
+            flexDirection: "row",
+            display: "flex",
+            justifyContent: "space-evenly",
+            alignItems: "center",
+           borderColor:'green',
           }}
         >
-          <div style={{ display: "flex", width: "40%" }}>
-            <img
-              src={require("../src/assets/images/profile.png")}
-              alt="Employee"
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: "10%",
-                alignItems: "center",
-                justifyContent: "center",
-                display: "flex",
-                marginTop: 5,
-              }}
-            />
-
-            <h5 style={{ paddingLeft: 20 }}>
-              {employee.firstName} {employee.lastName}
-              <br />
-              {employee.email}
-              <br />
-              {employee.phoneNumber}
-            </h5>
-          </div>
-
-          <Grid
-            item
-            xs={12}
-            md={2}
-            sx={{
-              width: "20%",
-              justifyContent: "flex-start",
-            }}
+          <img
+            style={{ width: 30, height: 30 }}
+            src={require("../assets/images/dashboard.png")}
+          />
+          <Typography className={classes.dashboardText}>Dashboard</Typography>
+        </div>
+        <List>
+          <ListItem button key="Home">
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItem>
+          <ListItem button key={"Map"} onClick={handleMapModalOpen}>
+          <ListItemIcon>
+            <Map />
+          </ListItemIcon>
+          <ListItemText primary={"Map"} />
+        </ListItem>
+          <ListItem button key="Add Employees" onClick={handleAddWorker}>
+            <ListItemIcon>
+              <AccountCircleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Add Employees" />
+          </ListItem>
+          
+          <ListItem button key="Settings">
+            <ListItemIcon>
+              <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Settings" />
+          </ListItem>
+        </List>
+      <Modal
+        open={openMapModal}
+        onClose={handleMapModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        className={classes.modal}
+      >
+        <Box className={classes.mapContainer}>
+          <GoogleMapReact
+            bootstrapURLKeys={{ key: "AIzaSyDCLLoMCFxTZaqgEuARPe-SM4WJu7QnSIM" }}
+            defaultCenter={defaultCenter}
+            defaultZoom={defaultZoom}
           >
-            <img
-              style={{ width: 40, height: 40, marginTop: 20 }}
-              src={require("../src/assets/images/prgress.png")}
-            />
-         
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            md={2}
-            sx={{
-              width: "20%",
-              justifyContent: "flex-start",
-              marginTop: 3,
-            }}
-          >
-            <RatingStars rating={employee.rating} />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            md={1}
-            sx={{
-              width: "20%",
-              justifyContent: "flex-start",
-            }}
-          >
-            <p>{employee.country}</p>
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            md={1}
-            sx={{
-              width: "40%",
-              justifyContent: "flex-start",
-              marginLeft: 10,
-            }}
-          >
-            <p>{employee.employeeID}</p>
-          </Grid>
-        </Grid>
-      ))}
+            {employees.map((employee) => (
+              <Marker key={employee.id} lat={employee.lat} lng={employee.lng} text={employee.name} />
+            ))}
+          </GoogleMapReact>
+        </Box>
+      </Modal>
       <Dialog open={openModal} onClose={handleCloseModal}>
         <DialogTitle>Add Worker</DialogTitle>
         <DialogContent>
@@ -471,13 +546,13 @@ const AllEmployees = () => {
             style={{
               display: "flex",
               justifyContent: "center",
-              width: "100%",
+              width: '100%',
               height: 40,
               marginLeft: "auto",
               marginRight: "auto",
               marginTop: 20,
-              backgroundColor: "green",
-              color: "white",
+              backgroundColor:'green',
+              color:'white'
             }}
             type="submit"
           >
@@ -490,8 +565,9 @@ const AllEmployees = () => {
           <Button onClick={handleCloseModal}>Cancel</Button>
         </DialogActions>
       </Dialog>
+      </Drawer>
     </div>
   );
 };
 
-export default AllEmployees;
+export default Sidebar;
