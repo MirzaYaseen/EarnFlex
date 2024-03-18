@@ -389,7 +389,7 @@ const Sidebar = () => {
       >
         <Box className={classes.mapContainer}>
           <GoogleMapReact
-            bootstrapURLKeys={{ key: "AIzaSyDCLLoMCFxTZaqgEuARPe-SM4WJu7QnSIM" }}
+            bootstrapURLKeys={{ key: "" }}
             defaultCenter={defaultCenter}
             defaultZoom={defaultZoom}
           >
