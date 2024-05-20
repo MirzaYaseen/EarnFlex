@@ -1,3 +1,12 @@
+# Web_App_View
+
+![image](https://github.com/MirzaYaseen/EarnFlex/assets/85738256/2f0d780d-0cba-4ae1-a3c5-80e1ce0e4c3a)
+
+![image](https://github.com/MirzaYaseen/EarnFlex/assets/85738256/8dee99cd-ee34-4bb0-b1d6-e0d9e0bf3c9f)
+
+![image](https://github.com/MirzaYaseen/EarnFlex/assets/85738256/55916dbb-246a-4908-9cf3-021a702579b6)
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
